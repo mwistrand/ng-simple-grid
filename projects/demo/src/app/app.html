@@ -1,0 +1,45 @@
+<main>
+  <header>
+    <h1>Simple Grid Demo</h1>
+  </header>
+
+  <div class="status">
+    @if (dataSource.loading$ | async) {
+      <span>Loading...</span>
+    }
+  </div>
+
+  <sg-table-scroll
+    [dataSource]="dataSource"
+    [trackBy]="trackById"
+    [batchSize]="50"
+    [maxRenderItemCount]="100"
+    [loadThresholdPercentBottom]="40"
+    [loadThresholdPercentTop]="40"
+    (loadingState)="onLoadingStateChange($event)">
+
+    <table class="table" sg-table>
+      <!-- ID Column -->
+      <ng-container sgColumnDef="id">
+        <th sg-header-cell *sgHeaderCellDef>ID</th>
+        <td sg-cell *sgCellDef="let user">{{ user.id }}</td>
+      </ng-container>
+
+      <!-- Name Column -->
+      <ng-container sgColumnDef="name">
+        <th sg-header-cell *sgHeaderCellDef>Name</th>
+        <td sg-cell *sgCellDef="let user">{{ user.name }}</td>
+      </ng-container>
+
+      <!-- Email Column -->
+      <ng-container sgColumnDef="email">
+        <th sg-header-cell *sgHeaderCellDef>Email</th>
+        <td sg-cell *sgCellDef="let user">{{ user.email }}</td>
+      </ng-container>
+
+      <!-- Header and Row Declarations -->
+      <tr sg-header-row *sgHeaderRowDef="displayedColumns"></tr>
+      <tr sg-row *sgRowDef="let row; columns: displayedColumns"></tr>
+    </table>
+  </sg-table-scroll>
+</main>

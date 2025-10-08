@@ -1,0 +1,30 @@
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.h1 {
+  margin-bottom: 20px;
+}
+
+.status {
+  margin-bottom: 10px;
+  min-height: 24px;
+  color: #666;
+}
+
+.sg-table-scroll {
+  max-height: 50vh;
+}
+
+.table {
+  width: 100%;
+
+  tr {
+    height: 25px;
+    text-align: left;
+  }
+}
+

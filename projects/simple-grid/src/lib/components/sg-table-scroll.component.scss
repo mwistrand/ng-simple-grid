@@ -1,0 +1,6 @@
+:host {
+  display: block;
+  overflow: auto;
+  /* This forces the element onto its own layer, fixing a Safari rendering bug. */
+  transform: translateZ(0);
+}

@@ -1,59 +1,165 @@
 # NgSimpleGrid
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 20.3.4.
+An Angular table component library built on Angular CDK, featuring infinite scroll and virtualized rendering capabilities.
 
-## Development server
+## Features
 
-To start a local development server, run:
+- **Infinite Scroll**: Automatically load data as users scroll through the table
+- **Virtualized Rendering**: Efficiently render large datasets by limiting rendered items
+- **Bidirectional Loading**: Support for loading data both upward and downward
+- **CDK-Based**: Built on Angular CDK Table for robust table functionality
+- **Customizable Thresholds**: Configure when to trigger data loading based on scroll position
 
-```bash
-ng serve
-```
-
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
-
-## Code scaffolding
-
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+## Installation
 
 ```bash
-ng generate component component-name
+npm install simple-grid
 ```
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+## Usage
+
+### Basic Setup
+
+Import the `SgTableModule` in your component:
+
+```typescript
+import { Component, OnInit } from '@angular/core';
+import { DataSource } from '@angular/cdk/collections';
+import { Observable, BehaviorSubject } from 'rxjs';
+import { SgTableLoadingDirection, SgTableLoadingState, SgTableModule } from 'simple-grid';
+
+interface User {
+  id: number;
+  name: string;
+  email: string;
+}
+
+class UserDataSource extends DataSource<User> {
+  private dataSubject = new BehaviorSubject<User[]>([]);
+
+  connect(): Observable<User[]> {
+    return this.dataSubject.asObservable();
+  }
+
+  disconnect(): void {
+    this.dataSubject.complete();
+  }
+
+  loadData(direction: SgTableLoadingDirection): void {
+    // Implement your data loading logic
+  }
+}
+
+@Component({
+  selector: 'app-root',
+  imports: [SgTableModule],
+  template: `...`
+})
+export class AppComponent implements OnInit {
+  readonly displayedColumns = ['id', 'name', 'email'];
+  readonly dataSource = new UserDataSource();
+
+  ngOnInit() {
+    this.dataSource.loadData('next');
+  }
+
+  onLoadingStateChange(state: SgTableLoadingState): void {
+    this.dataSource.loadData(state.requesting);
+  }
+
+  trackById(index: number, user: User): number {
+    return user.id;
+  }
+}
+```
+
+### Template
+
+```html
+<sg-table-scroll
+  [dataSource]="dataSource"
+  [trackBy]="trackById"
+  [batchSize]="50"
+  [maxRenderItemCount]="100"
+  [loadThresholdPercentBottom]="40"
+  [loadThresholdPercentTop]="40"
+  (loadingState)="onLoadingStateChange($event)">
+
+  <table sg-table>
+    <!-- Column Definitions -->
+    <ng-container sgColumnDef="id">
+      <th sg-header-cell *sgHeaderCellDef>ID</th>
+      <td sg-cell *sgCellDef="let user">{{ user.id }}</td>
+    </ng-container>
+
+    <ng-container sgColumnDef="name">
+      <th sg-header-cell *sgHeaderCellDef>Name</th>
+      <td sg-cell *sgCellDef="let user">{{ user.name }}</td>
+    </ng-container>
+
+    <ng-container sgColumnDef="email">
+      <th sg-header-cell *sgHeaderCellDef>Email</th>
+      <td sg-cell *sgCellDef="let user">{{ user.email }}</td>
+    </ng-container>
+
+    <!-- Header and Row Declarations -->
+    <tr sg-header-row *sgHeaderRowDef="displayedColumns"></tr>
+    <tr sg-row *sgRowDef="let row; columns: displayedColumns"></tr>
+  </table>
+</sg-table-scroll>
+```
+
+## Components
+
+### sg-table-scroll
+
+The scroll container component that handles infinite scroll and virtualization.
+
+**Inputs:**
+- `dataSource` - The CDK data source for the table
+- `trackBy` (required) - TrackBy function for efficient row rendering
+- `batchSize` - Number of items to load per batch (default: 50)
+- `maxRenderItemCount` - Maximum number of items to render at once
+- `loadThresholdPercentTop` - Percentage of viewport to trigger loading when scrolling up (default: 20)
+- `loadThresholdPercentBottom` - Percentage of viewport to trigger loading when scrolling down (default: 20)
+
+**Outputs:**
+- `loadingState` - Emits loading state changes with direction ('next' or 'previous')
+
+### sg-table
+
+The table component built on Angular CDK Table. Use as the selector `table[sg-table]` or `sg-table`.
+
+This component extends `CdkTable` and provides the same functionality with additional features for working with the scroll container.
+
+## Development
+
+To start a local development server with the demo:
 
 ```bash
-ng generate --help
+npm start
 ```
+
+Navigate to `http://localhost:4200/` to see the demo application.
 
 ## Building
 
-To build the project run:
+To build the library:
 
 ```bash
-ng build
+ng build simple-grid
 ```
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+The build artifacts will be stored in the `dist/` directory.
 
-## Running unit tests
+## Running Tests
 
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
+To execute unit tests:
 
 ```bash
 ng test
 ```
 
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
 ## Additional Resources
 
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+For more information on using the Angular CLI, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
