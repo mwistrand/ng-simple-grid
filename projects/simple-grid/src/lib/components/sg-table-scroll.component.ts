@@ -1,5 +1,22 @@
 import { CdkTableDataSourceInput } from '@angular/cdk/table';
-import { AfterContentChecked, afterEveryRender, Component, computed, ContentChild, ElementRef, forwardRef, inject, InjectionToken, input, NgZone, OnDestroy, OnInit, output, TrackByFunction, untracked } from '@angular/core';
+import {
+  AfterContentChecked,
+  afterEveryRender,
+  Component,
+  computed,
+  ContentChild,
+  ElementRef,
+  forwardRef,
+  inject,
+  InjectionToken,
+  input,
+  NgZone,
+  OnDestroy,
+  OnInit,
+  output,
+  TrackByFunction,
+  untracked,
+} from '@angular/core';
 import { distinctUntilChanged, skip, Subject, takeUntil } from 'rxjs';
 import { LoadingState, SgTableLoadingDirection, VirtualizedDataSource } from '../models';
 import { SgTableComponent } from './sg-table.component';
@@ -7,27 +24,34 @@ import { SgTableComponent } from './sg-table.component';
 export type ScrollDataSourceProvider<T> = () => CdkTableDataSourceInput<T>;
 export type ScrollTrackByProvider<T> = () => TrackByFunction<T>;
 
-export const SCROLL_DATA_SOURCE_TOKEN = new InjectionToken<ScrollDataSourceProvider<any>>('SgScrollDataSourceToken');
-export const SCROLL_TRACK_BY_TOKEN = new InjectionToken<ScrollTrackByProvider<any>>('SgScrollTrackByToken');
+export const SCROLL_DATA_SOURCE_TOKEN = new InjectionToken<ScrollDataSourceProvider<any>>(
+  'SgScrollDataSourceToken',
+);
+export const SCROLL_TRACK_BY_TOKEN = new InjectionToken<ScrollTrackByProvider<any>>(
+  'SgScrollTrackByToken',
+);
 
 @Component({
   selector: 'sg-table-scroll',
   template: `<ng-content></ng-content>`,
   styleUrl: './sg-table-scroll.component.scss',
   host: {
-    'class': 'sg-table-scroll',
-    'tabindex': '0'
+    class: 'sg-table-scroll',
+    tabindex: '0',
   },
   imports: [],
-  providers: [{
-    provide: SCROLL_DATA_SOURCE_TOKEN,
-    useFactory: (comp: SgTableScrollComponent) => () => comp.virtualizedDataSource(),
-    deps: [forwardRef(() => SgTableScrollComponent)]
-  }, {
-    provide: SCROLL_TRACK_BY_TOKEN,
-    useFactory: (comp: SgTableScrollComponent) => () => comp.trackBy(),
-    deps: [forwardRef(() => SgTableScrollComponent)]
-  }]
+  providers: [
+    {
+      provide: SCROLL_DATA_SOURCE_TOKEN,
+      useFactory: (comp: SgTableScrollComponent) => () => comp.virtualizedDataSource(),
+      deps: [forwardRef(() => SgTableScrollComponent)],
+    },
+    {
+      provide: SCROLL_TRACK_BY_TOKEN,
+      useFactory: (comp: SgTableScrollComponent) => () => comp.trackBy(),
+      deps: [forwardRef(() => SgTableScrollComponent)],
+    },
+  ],
 })
 /**
  * Component providing infinite scroll and virtualized rendering for tables.
@@ -148,7 +172,7 @@ export class SgTableScrollComponent<T = any> implements AfterContentChecked, OnI
     return new VirtualizedDataSource<T>(
       dataSource,
       this.maxRenderItemCount() ?? Infinity,
-      this.batchSize() ?? 50
+      this.batchSize() ?? 50,
     );
   });
 
@@ -180,12 +204,17 @@ export class SgTableScrollComponent<T = any> implements AfterContentChecked, OnI
             if (isScrolledToBottom) {
               const rowElements = this.tableComponent?.rowElements;
               const lastIndex = rowElements?.length ?? -1;
-              const previousLastIndex = lastIndex < 0 ? -1 : Math.max(0, lastIndex - this.lastRemovedCount - 1);
-              const previousLastRow = previousLastIndex < 0 ? null : rowElements?.get(previousLastIndex);
+              const previousLastIndex =
+                lastIndex < 0 ? -1 : Math.max(0, lastIndex - this.lastRemovedCount - 1);
+              const previousLastRow =
+                previousLastIndex < 0 ? null : rowElements?.get(previousLastIndex);
               this.zone.runOutsideAngular(() => {
                 requestAnimationFrame(() => {
                   if (previousLastRow != null) {
-                    previousLastRow.nativeElement.scrollIntoView({ behavior: 'auto', block: 'end' });
+                    previousLastRow.nativeElement.scrollIntoView({
+                      behavior: 'auto',
+                      block: 'end',
+                    });
                   }
                 });
               });
@@ -194,8 +223,8 @@ export class SgTableScrollComponent<T = any> implements AfterContentChecked, OnI
 
           this.lastRemovedCount = 0;
         }
-      }
-    })
+      },
+    });
   }
 
   /**
@@ -236,7 +265,8 @@ export class SgTableScrollComponent<T = any> implements AfterContentChecked, OnI
       return;
     }
 
-    dataSource.updates$.pipe(skip(1), distinctUntilChanged(), takeUntil(this.destroySubject))
+    dataSource.updates$
+      .pipe(skip(1), distinctUntilChanged(), takeUntil(this.destroySubject))
       .subscribe(({ removedCount }) => {
         this.lastRemovedCount = removedCount;
       });
@@ -278,7 +308,7 @@ export class SgTableScrollComponent<T = any> implements AfterContentChecked, OnI
         root,
         rootMargin,
         threshold: 0,
-      }
+      },
     );
 
     this.intersectionObserver.observe(this.bottomSentinelElement);
@@ -340,4 +370,3 @@ export class SgTableScrollComponent<T = any> implements AfterContentChecked, OnI
     }
   }
 }
-

@@ -7,20 +7,20 @@ import { SgTableModule } from '../../sg-table.module';
   template: `
     <table sg-table>
       <ng-container sgColumnDef="username">
-        <th sg-header-cell *sgHeaderCellDef> User name </th>
-        <td sg-cell *sgCellDef="let row"> {{row.username}} </td>
+        <th sg-header-cell *sgHeaderCellDef>User name</th>
+        <td sg-cell *sgCellDef="let row">{{ row.username }}</td>
       </ng-container>
 
       <!-- Age Definition -->
       <ng-container sgColumnDef="age">
-        <th sg-header-cell *sgHeaderCellDef> Age </th>
-        <td sg-cell *sgCellDef="let row"> {{row.age}} </td>
+        <th sg-header-cell *sgHeaderCellDef>Age</th>
+        <td sg-cell *sgCellDef="let row">{{ row.age }}</td>
       </ng-container>
 
       <!-- Title Definition -->
       <ng-container sgColumnDef="title">
-        <th sg-header-cell *sgHeaderCellDef> Title </th>
-        <td sg-cell *sgCellDef="let row"> {{row.title}} </td>
+        <th sg-header-cell *sgHeaderCellDef>Title</th>
+        <td sg-cell *sgCellDef="let row">{{ row.title }}</td>
       </ng-container>
 
       <!-- Header and Row Declarations -->

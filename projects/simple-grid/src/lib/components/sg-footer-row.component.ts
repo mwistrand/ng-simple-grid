@@ -12,6 +12,6 @@ import { CdkCellOutlet, CdkFooterRow } from '@angular/cdk/table';
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   providers: [{ provide: CdkFooterRow, useExisting: forwardRef(() => SgFooterRowComponent) }],
-  imports: [CdkCellOutlet]
+  imports: [CdkCellOutlet],
 })
 export class SgFooterRowComponent extends CdkFooterRow {}

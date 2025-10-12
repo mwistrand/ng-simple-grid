@@ -5,8 +5,8 @@ import { CdkRowDef } from '@angular/cdk/table';
   selector: '[sgRowDef]',
   providers: [{ provide: CdkRowDef, useExisting: forwardRef(() => SgRowDefDirective) }],
   inputs: [
-    {name: 'columns', alias: 'sgRowDefColumns'},
-    {name: 'when', alias: 'sgRowDefWhen'},
+    { name: 'columns', alias: 'sgRowDefColumns' },
+    { name: 'when', alias: 'sgRowDefWhen' },
   ],
   host: {
     class: 'sg-row-def',

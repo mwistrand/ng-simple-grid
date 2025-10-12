@@ -5,8 +5,8 @@ import { CdkHeaderRowDef } from '@angular/cdk/table';
   selector: '[sgHeaderRowDef]',
   providers: [{ provide: CdkHeaderRowDef, useExisting: forwardRef(() => SgHeaderRowDefDirective) }],
   inputs: [
-    {name: 'columns', alias: 'sgHeaderRowDef'},
-    {name: 'sticky', alias: 'sgHeaderRowDefSticky', transform: booleanAttribute},
+    { name: 'columns', alias: 'sgHeaderRowDef' },
+    { name: 'sticky', alias: 'sgHeaderRowDefSticky', transform: booleanAttribute },
   ],
   host: {
     class: 'sg-header-row-def',

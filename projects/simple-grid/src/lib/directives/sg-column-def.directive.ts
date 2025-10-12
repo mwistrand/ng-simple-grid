@@ -9,7 +9,6 @@ import { CdkColumnDef } from '@angular/cdk/table';
   },
 })
 export class SgColumnDefDirective extends CdkColumnDef {
-
   @Input('sgColumnDef')
   override get name(): string {
     return this._name;

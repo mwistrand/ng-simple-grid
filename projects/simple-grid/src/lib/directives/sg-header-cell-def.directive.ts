@@ -3,7 +3,9 @@ import { CdkHeaderCellDef } from '@angular/cdk/table';
 
 @Directive({
   selector: '[sgHeaderCellDef]',
-  providers: [{ provide: CdkHeaderCellDef, useExisting: forwardRef(() => SgHeaderCellDefDirective) }],
+  providers: [
+    { provide: CdkHeaderCellDef, useExisting: forwardRef(() => SgHeaderCellDefDirective) },
+  ],
   host: {
     class: 'sg-header-cell-def',
   },

@@ -20,7 +20,7 @@ import {
   SgFooterRowDefDirective,
   SgNoDataRowDirective,
   SgRecycleRowsDirective,
-} from './lib/directives'
+} from './lib/directives';
 
 const INCLUDED = [
   SgTableScrollComponent,
@@ -44,6 +44,6 @@ const INCLUDED = [
 
 @NgModule({
   imports: INCLUDED,
-  exports: [...INCLUDED]
+  exports: [...INCLUDED],
 })
 export class SgTableModule {}

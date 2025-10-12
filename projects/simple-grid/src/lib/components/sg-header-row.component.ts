@@ -12,6 +12,6 @@ import { CdkCellOutlet, CdkHeaderRow } from '@angular/cdk/table';
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   providers: [{ provide: CdkHeaderRow, useExisting: forwardRef(() => SgHeaderRowComponent) }],
-  imports: [CdkCellOutlet]
+  imports: [CdkCellOutlet],
 })
 export class SgHeaderRowComponent extends CdkHeaderRow {}

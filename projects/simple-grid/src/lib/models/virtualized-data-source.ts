@@ -24,7 +24,7 @@ export class VirtualizedDataSource<T> extends DataSource<T> {
   constructor(
     private readonly dataSource: CdkTableDataSourceInput<T>,
     private readonly maxRenderItemCount: number = Infinity,
-    private readonly pageSize: number = 50
+    private readonly pageSize: number = 50,
   ) {
     super();
     this.startPointer = 0;
@@ -46,7 +46,7 @@ export class VirtualizedDataSource<T> extends DataSource<T> {
       return observable$;
     }
 
-    this.dataSourceSubscription = observable$.subscribe(data => {
+    this.dataSourceSubscription = observable$.subscribe((data) => {
       const { currentData, maxRenderItemCount, pageSize } = this;
       this.allData = data;
       if (this.currentDirection === 'next') {
@@ -60,14 +60,12 @@ export class VirtualizedDataSource<T> extends DataSource<T> {
       this.currentData = data.slice(this.startPointer, this.endPointer);
       this.dataSubject.next({
         data: this.currentData,
-        removedCount
+        removedCount,
       });
       this.currentDirection = undefined;
     });
 
-    return this.dataSubject.asObservable().pipe(
-      map(({ data }) => data)
-    );
+    return this.dataSubject.asObservable().pipe(map(({ data }) => data));
   }
 
   disconnect(collectionViewer: CollectionViewer): void {
@@ -96,16 +94,17 @@ export class VirtualizedDataSource<T> extends DataSource<T> {
     if (newEndPointer > allData.length) {
       return true;
     }
-    const newStartPointer = newEndPointer - startPointer <= maxRenderItemCount
-      ? startPointer
-      : newEndPointer - maxRenderItemCount;
+    const newStartPointer =
+      newEndPointer - startPointer <= maxRenderItemCount
+        ? startPointer
+        : newEndPointer - maxRenderItemCount;
     this.startPointer = Math.max(0, newStartPointer);
     this.endPointer = Math.min(newEndPointer, allData.length);
     const removedCount = this.currentData.length + pageSize - maxRenderItemCount;
     this.currentData = allData.slice(this.startPointer, this.endPointer);
     this.dataSubject.next({
       data: this.currentData,
-      removedCount
+      removedCount,
     });
     return false;
   }
@@ -124,7 +123,7 @@ export class VirtualizedDataSource<T> extends DataSource<T> {
     this.currentData = allData.slice(this.startPointer, this.endPointer);
     this.dataSubject.next({
       data: this.currentData,
-      removedCount
+      removedCount,
     });
     return false;
   }

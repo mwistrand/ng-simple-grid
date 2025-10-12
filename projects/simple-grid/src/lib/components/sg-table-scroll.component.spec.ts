@@ -8,9 +8,8 @@ describe(SgTableScrollComponent.name, () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [SgTableScrollComponent]
-    })
-    .compileComponents();
+      imports: [SgTableScrollComponent],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(SgTableScrollComponent);
     component = fixture.componentInstance;
