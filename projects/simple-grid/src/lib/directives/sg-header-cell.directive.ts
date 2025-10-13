@@ -63,10 +63,27 @@ export class SgHeaderCellDirective extends CdkHeaderCell {
       if (originalTabIndex == null) {
         originalTabIndex = el.getAttribute('tabindex');
       }
-      renderer.setProperty(el, 'tabIndex', isDraggable ? 0 : originalTabIndex);
-      renderer.setProperty(el, 'draggable', isDraggable ? 'true' : undefined);
-      renderer.setProperty(el, 'role', isDraggable ? 'button' : originalRole);
-      renderer.setProperty(el, 'aria-grabbed', isDraggable ? 'false' : undefined);
+
+      if (isDraggable) {
+        renderer.setAttribute(el, 'tabIndex', '0');
+        renderer.setAttribute(el, 'draggable', 'true');
+        renderer.setAttribute(el, 'role', 'button');
+        renderer.setAttribute(el, 'aria-grabbed', 'false');
+      } else {
+        if (originalTabIndex != null) {
+          renderer.setAttribute(el, 'tabIndex', originalTabIndex);
+        } else {
+          renderer.removeAttribute(el, 'tabindex');
+        }
+        if (originalRole != null) {
+          renderer.setAttribute(el, 'role', originalRole);
+        } else {
+          renderer.removeAttribute(el, 'role');
+        }
+
+        renderer.removeAttribute(el, 'draggable');
+        renderer.removeAttribute(el, 'aria-grabbed');
+      }
     });
   }
 
