@@ -1,7 +1,12 @@
 import { Component, OnInit } from '@angular/core';
 import { DataSource } from '@angular/cdk/collections';
 import { Observable, BehaviorSubject } from 'rxjs';
-import { SgTableLoadingDirection, SgTableLoadingState, SgTableModule } from 'simple-grid';
+import {
+  ColumnOrderUpdate,
+  SgTableLoadingDirection,
+  SgTableLoadingState,
+  SgTableModule,
+} from 'simple-grid';
 import { CommonModule } from '@angular/common';
 
 interface User {
@@ -56,8 +61,8 @@ class UserDataSource extends DataSource<User> {
   styleUrl: './app.scss',
 })
 export class AppComponent implements OnInit {
-  readonly displayedColumns = ['id', 'name', 'email'];
-  readonly dataSource = new UserDataSource();
+  protected readonly dataSource = new UserDataSource();
+  protected displayedColumns = ['id', 'name', 'email'];
 
   ngOnInit() {
     this.dataSource.loadData('next');
@@ -65,6 +70,13 @@ export class AppComponent implements OnInit {
 
   onLoadingStateChange(state: SgTableLoadingState): void {
     this.dataSource.loadData(state.requesting);
+  }
+
+  onUpdateColumnOrder({ from, to }: ColumnOrderUpdate) {
+    const displayedColumns = [...this.displayedColumns];
+    const [removed] = displayedColumns.splice(from, 1);
+    displayedColumns.splice(to, 0, removed);
+    this.displayedColumns = displayedColumns;
   }
 
   trackById(index: number, user: User): number {

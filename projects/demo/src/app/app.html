@@ -18,7 +18,7 @@
     [loadThresholdPercentTop]="40"
     (loadingState)="onLoadingStateChange($event)"
   >
-    <table class="table" sg-table>
+    <table class="table" sg-table [dnd]="true" (updateColumnOrder)="onUpdateColumnOrder($event)">
       <!-- ID Column -->
       <ng-container sgColumnDef="id">
         <th sg-header-cell *sgHeaderCellDef>ID</th>

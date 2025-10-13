@@ -1,0 +1,14 @@
+.sg-header-cell.is-drop-candidate {
+  outline: 2px dotted #000;
+  outline-offset: -2px;
+}
+
+.sg-header-cell[draggable='true'] {
+  cursor: move;
+  touch-action: none;
+  user-select: none;
+}
+
+.sg-header-cell[aria-grabbed='true'] {
+  opacity: 0.5;
+}
