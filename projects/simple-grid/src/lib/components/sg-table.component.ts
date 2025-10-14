@@ -293,11 +293,11 @@ export class SgTableComponent<T> extends CdkTable<T> {
       return;
     }
 
-    event.preventDefault();
-
     const target = event.target as HTMLElement;
     const cell = this.getHeaderCell(target);
     if (!cell) return;
+
+    event.preventDefault();
 
     const index = this.getHeaderCellIndex(cell);
     if (index < 0) {
@@ -343,13 +343,13 @@ export class SgTableComponent<T> extends CdkTable<T> {
       return;
     }
 
-    event.preventDefault();
-    event.stopPropagation();
-
     const targetIndex = this.getHeaderCellIndex(event.target as Element);
     if (targetIndex < 0) {
       return;
     }
+
+    event.preventDefault();
+    event.stopPropagation();
 
     const draggedIndex = this.draggedColumnIndex();
     if (draggedIndex === null || draggedIndex === targetIndex) {
@@ -420,6 +420,7 @@ export class SgTableComponent<T> extends CdkTable<T> {
       return;
     }
 
+    event.preventDefault();
     this.draggedColumnIndex.set(index);
     const target = event.target as HTMLElement;
     target.style.opacity = '0.5';
@@ -428,6 +429,10 @@ export class SgTableComponent<T> extends CdkTable<T> {
 
   private onHostTouchMove(event: TouchEvent) {
     if (!untracked(this.dnd)) {
+      return;
+    }
+
+    if (this.draggedColumnIndex() === null) {
       return;
     }
 
@@ -441,7 +446,7 @@ export class SgTableComponent<T> extends CdkTable<T> {
     if (!cell) return;
 
     const { headerCells } = this;
-    const index = this.getHeaderCellIndex(event.target as Element);
+    const index = this.getHeaderCellIndex(cell);
 
     if (index === -1 || index === this.draggedColumnIndex()) return;
 
