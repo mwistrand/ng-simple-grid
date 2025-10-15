@@ -6,6 +6,7 @@ import {
   SgHeaderRowComponent,
   SgRowComponent,
   SgFooterRowComponent,
+  SgGroupDialogComponent,
 } from './lib/components';
 import {
   SgColumnDefDirective,
@@ -40,6 +41,7 @@ const INCLUDED = [
   SgHeaderRowComponent,
   SgRowComponent,
   SgFooterRowComponent,
+  SgGroupDialogComponent,
 ];
 
 @NgModule({

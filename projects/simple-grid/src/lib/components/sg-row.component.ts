@@ -1,4 +1,10 @@
-import { Component, ChangeDetectionStrategy, ViewEncapsulation, forwardRef } from '@angular/core';
+import {
+  Component,
+  ChangeDetectionStrategy,
+  ViewEncapsulation,
+  forwardRef,
+  input,
+} from '@angular/core';
 import { CdkCellOutlet, CdkRow } from '@angular/cdk/table';
 
 @Component({
@@ -14,4 +20,6 @@ import { CdkCellOutlet, CdkRow } from '@angular/cdk/table';
   providers: [{ provide: CdkRow, useExisting: forwardRef(() => SgRowComponent) }],
   imports: [CdkCellOutlet],
 })
-export class SgRowComponent extends CdkRow {}
+export class SgRowComponent extends CdkRow {
+  readonly selectable = input(true);
+}

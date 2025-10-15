@@ -17,6 +17,8 @@ import {
   TrackByFunction,
   untracked,
   ViewEncapsulation,
+  computed,
+  effect,
 } from '@angular/core';
 import {
   CdkTable,
@@ -28,6 +30,8 @@ import {
   FooterRowOutlet,
   CdkTableDataSourceInput,
 } from '@angular/cdk/table';
+import { Dialog } from '@angular/cdk/dialog';
+import { LiveAnnouncer } from '@angular/cdk/a11y';
 
 import {
   _DisposeViewRepeaterStrategy,
@@ -45,6 +49,8 @@ import {
   SG_HEADER_CELL_SELECTOR,
   SgHeaderCellDirective,
 } from '../directives/sg-header-cell.directive';
+import { SgTableGroupingConfig, RowsGroupedEvent } from '../models/grouping-config';
+import { SgGroupDialogComponent, GroupDialogResult } from './sg-group-dialog.component';
 
 /** Position relative to the target column where a dragged column should be inserted. */
 export type ColumnOrderPosition = 'before' | 'after' | null;
@@ -106,6 +112,7 @@ export const DRAGGABLE_COLUMN_FLAG_PROVIDER = new InjectionToken<DraggableColumn
   host: {
     class: 'sg-table',
     '[class.sg-table-fixed-layout]': 'fixedLayout',
+    '[class.sg-table-grouping-enabled]': 'groupingConfig()?.enabled',
   },
   providers: [
     { provide: CdkTable, useExisting: forwardRef(() => SgTableComponent) },
@@ -133,6 +140,8 @@ export class SgTableComponent<T> extends CdkTable<T> {
   protected override needsPositionStickyOnElement = false;
 
   private hostRef = inject(ElementRef);
+  private dialog = inject(Dialog);
+  private liveAnnouncer = inject(LiveAnnouncer);
 
   @ContentChildren(SgHeaderCellDirective)
   headerCells?: QueryList<SgHeaderCellDirective>;
@@ -150,14 +159,27 @@ export class SgTableComponent<T> extends CdkTable<T> {
   private hostTouchMoveListener?: EventListener;
   private hostTouchEndListener?: EventListener;
 
+  private selectedRows = signal<Set<T>>(new Set());
+  protected readonly selectedRowsCount = computed(() => this.selectedRows().size);
+  protected readonly showGroupButton = computed(() => this.selectedRowsCount() >= 2);
+
   /** Enable drag and drop for columns */
   readonly dnd = input(false);
+
+  /** Configuration for row grouping feature */
+  readonly groupingConfig = input<SgTableGroupingConfig<T>>();
 
   /**
    * Emits when column order changes due to drag and drop operation.
    * Contains information about the source and target column indices and the drop position.
    */
   readonly updateColumnOrder = output<ColumnOrderUpdate>();
+
+  /** Emits the complete list of currently selected row data models */
+  readonly selectionChanged = output<T[]>();
+
+  /** Emits when user confirms grouping rows via the dialog */
+  readonly rowsGrouped = output<RowsGroupedEvent<T>>();
 
   override get dataSource(): CdkTableDataSourceInput<T> {
     const dataSource = super.dataSource;
@@ -210,6 +232,94 @@ export class SgTableComponent<T> extends CdkTable<T> {
         }
       },
     });
+
+    effect(() => {
+      const count = this.selectedRowsCount();
+      if (count > 0) {
+        this.liveAnnouncer.announce(`${count} ${count === 1 ? 'row' : 'rows'} selected`);
+      }
+    });
+  }
+
+  isRowSelected(row: T): boolean {
+    return this.selectedRows().has(row);
+  }
+
+  toggleRowSelection(row: T): void {
+    const selected = new Set(this.selectedRows());
+    if (selected.has(row)) {
+      selected.delete(row);
+    } else {
+      selected.add(row);
+    }
+    this.selectedRows.set(selected);
+    this.selectionChanged.emit(Array.from(selected));
+  }
+
+  toggleAllRows(): void {
+    const selected = this.selectedRows();
+    const allData = this.getAllSelectableRows();
+
+    if (selected.size === allData.length && allData.length > 0) {
+      this.selectedRows.set(new Set());
+      this.selectionChanged.emit([]);
+      this.liveAnnouncer.announce('All rows deselected');
+    } else {
+      const newSelected = new Set(allData);
+      this.selectedRows.set(newSelected);
+      this.selectionChanged.emit(Array.from(newSelected));
+      this.liveAnnouncer.announce('All rows selected');
+    }
+  }
+
+  isAllSelected(): boolean {
+    const allData = this.getAllSelectableRows();
+    return allData.length > 0 && this.selectedRows().size === allData.length;
+  }
+
+  isSomeSelected(): boolean {
+    const count = this.selectedRows().size;
+    return count > 0 && !this.isAllSelected();
+  }
+
+  openGroupDialog(): void {
+    const selectedItems = Array.from(this.selectedRows());
+    if (selectedItems.length < 2) {
+      return;
+    }
+
+    const config = this.groupingConfig();
+    const dialogComponent = config?.customGroupDialog || SgGroupDialogComponent;
+
+    const dialogRef = this.dialog.open<GroupDialogResult>(dialogComponent, {
+      data: { selectedCount: selectedItems.length },
+      ariaLabelledBy: 'dialog-title',
+    });
+
+    dialogRef.closed.subscribe((result) => {
+      if (result?.groupName) {
+        this.rowsGrouped.emit({
+          groupName: result.groupName,
+          models: selectedItems,
+        });
+        this.selectedRows.set(new Set());
+        this.selectionChanged.emit([]);
+        this.liveAnnouncer.announce(
+          `${selectedItems.length} rows grouped as "${result.groupName}"`,
+        );
+      }
+    });
+  }
+
+  private getAllSelectableRows(): T[] {
+    // Get all data from the current data source
+    const dataSource = this.dataSource;
+    if (Array.isArray(dataSource)) {
+      return dataSource;
+    }
+    // For now, return empty if not an array. In real implementation,
+    // we would need to handle Observable data sources
+    return [];
   }
 
   override ngAfterContentInit(): void {

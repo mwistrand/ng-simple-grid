@@ -8,9 +8,11 @@ An Angular table component library built on Angular CDK, featuring infinite scro
 - **Virtualized Rendering**: Efficiently render large datasets by limiting rendered items
 - **Bidirectional Loading**: Support for loading data both upward and downward
 - **Drag and Drop Columns**: Reorder table columns with mouse, touch, and keyboard support
+- **Row Grouping**: Select and group rows with programmatic and user-defined grouping support
 - **CDK-Based**: Built on Angular CDK Table for robust table functionality
 - **Customizable Thresholds**: Configure when to trigger data loading based on scroll position
 - **Accessibility**: Full WCAG 2.2 compliance with keyboard and screen reader support
+- **Sorting and Pagination**: Full support for standard Angular CDK table features
 
 ## Installation
 
@@ -136,9 +138,12 @@ This component extends `CdkTable` and provides the same functionality with addit
 
 **Inputs:**
 - `dnd` - Enable drag and drop for column reordering (default: false)
+- `groupingConfig` - Configuration object for row grouping feature
 
 **Outputs:**
 - `updateColumnOrder` - Emits when columns are reordered via drag and drop
+- `selectionChanged` - Emits the complete list of currently selected row data models
+- `rowsGrouped` - Emits when user confirms grouping rows via the dialog
 
 ## Drag and Drop Column Reordering
 
@@ -291,6 +296,244 @@ The drag-and-drop functionality includes default styles that can be customized:
 ```
 
 You can override these styles in your application's CSS to match your design system.
+
+## Row Grouping
+
+NgSimpleGrid provides a comprehensive row grouping feature that allows users to select multiple rows and organize them into custom groups. This feature includes both programmatic grouping based on data properties and user-defined grouping through an interactive dialog.
+
+### Enabling Row Grouping
+
+To enable the row grouping feature, provide a `groupingConfig` object to the table component:
+
+```typescript
+import { Component, signal } from '@angular/core';
+import { SgTableGroupingConfig, SgTableModule, GroupableDataSource } from 'simple-grid';
+
+interface Product {
+  id: number;
+  name: string;
+  category: string;
+  price: number;
+}
+
+@Component({
+  selector: 'app-products',
+  imports: [SgTableModule],
+  template: `...`
+})
+export class ProductsComponent {
+  groupingConfig = signal<SgTableGroupingConfig<Product>>({
+    enabled: true,
+    groupBy: 'category',
+    sortWithinGroups: true
+  });
+
+  onSelectionChanged(selectedItems: Product[]): void {
+    console.log('Selected items:', selectedItems);
+  }
+
+  onRowsGrouped(event: { groupName: string; models: Product[] }): void {
+    console.log(`Grouped ${event.models.length} items as "${event.groupName}"`);
+    // Handle the grouped items as needed
+  }
+}
+```
+
+```html
+<table sg-table 
+  [dataSource]="dataSource" 
+  [groupingConfig]="groupingConfig()"
+  (selectionChanged)="onSelectionChanged($event)"
+  (rowsGrouped)="onRowsGrouped($event)">
+  
+  <!-- Column definitions -->
+  <ng-container sgColumnDef="name">
+    <th sg-header-cell *sgHeaderCellDef>Name</th>
+    <td sg-cell *sgCellDef="let product">{{ product.name }}</td>
+  </ng-container>
+
+  <ng-container sgColumnDef="category">
+    <th sg-header-cell *sgHeaderCellDef>Category</th>
+    <td sg-cell *sgCellDef="let product">{{ product.category }}</td>
+  </ng-container>
+
+  <ng-container sgColumnDef="price">
+    <th sg-header-cell *sgHeaderCellDef>Price</th>
+    <td sg-cell *sgCellDef="let product">{{ product.price | currency }}</td>
+  </ng-container>
+
+  <!-- Header and Row Declarations -->
+  <tr sg-header-row *sgHeaderRowDef="displayedColumns"></tr>
+  <tr sg-row *sgRowDef="let row; columns: displayedColumns"></tr>
+</table>
+```
+
+### Grouping Configuration
+
+The `SgTableGroupingConfig` interface provides the following options:
+
+#### `enabled` (boolean)
+Enables the entire row selection and grouping feature. When enabled, a checkbox column is automatically added as the first column of the table.
+
+**Default:** `false`
+
+#### `groupBy` (property name, array, or function)
+Defines programmatic grouping. Can be:
+- A property name: `'category'`
+- An array of property names for hierarchical grouping: `['country', 'city']`
+- A function that returns a group name or array of group names: `(item) => item.category`
+
+When user-defined groups are created, they take precedence over programmatic grouping.
+
+#### `sortWithinGroups` (boolean)
+Controls sorting behavior when grouping is enabled:
+- When `true` (default): Sorting is applied within each group, maintaining the group structure
+- When `false`: Activating a sort flattens the display and sorts all rows as a single list
+
+**Default:** `true`
+
+#### `customGroupDialog` (ComponentType)
+An optional custom component to use for the grouping dialog. The custom component must:
+- Accept `GroupDialogData` via `DIALOG_DATA` injection token
+- Emit a `GroupDialogResult` when the user confirms
+- Handle focus management appropriately
+
+### Using GroupableDataSource
+
+For advanced grouping scenarios, use the `GroupableDataSource` class which integrates seamlessly with the table's grouping configuration:
+
+```typescript
+import { Component } from '@angular/core';
+import { GroupableDataSource, SgTableGroupingConfig } from 'simple-grid';
+
+@Component({
+  selector: 'app-products',
+  imports: [SgTableModule],
+  template: `...`
+})
+export class ProductsComponent {
+  groupingConfig: SgTableGroupingConfig<Product> = {
+    enabled: true,
+    groupBy: (item) => item.category,
+    sortWithinGroups: true
+  };
+
+  dataSource = new GroupableDataSource<Product>(
+    this.groupingConfig,
+    (index, item) => item.id
+  );
+
+  ngOnInit() {
+    // Load your data
+    const products: Product[] = [...];
+    this.dataSource.setData(products);
+  }
+
+  onRowsGrouped(event: { groupName: string; models: Product[] }): void {
+    // Add the user-defined group to the data source
+    this.dataSource.addUserGroup(event.groupName, event.models);
+  }
+}
+```
+
+### Row Selection Control
+
+Individual rows can be marked as non-selectable using the `selectable` input on the row component:
+
+```html
+<tr sg-row 
+  *sgRowDef="let row; columns: displayedColumns"
+  [selectable]="row.canBeGrouped">
+</tr>
+```
+
+A row is only selectable if both the table's `groupingConfig.enabled` is `true` and the row's `selectable` input is `true` (which is the default).
+
+### User Interaction
+
+When row grouping is enabled:
+
+1. **Checkbox Column**: A checkbox column appears as the first column with:
+   - Header checkbox: Select/deselect all selectable rows (supports indeterminate state)
+   - Row checkboxes: Toggle individual row selection (disabled for non-selectable rows)
+
+2. **Group Rows Button**: Appears in the header checkbox cell when two or more rows are selected
+   - Opens a modal dialog for naming the group
+   - Fully keyboard accessible with proper focus management
+
+3. **Accessibility Announcements**: Screen reader users receive announcements for:
+   - Number of selected rows
+   - Appearance of the "Group Rows" button
+   - Results of "select all" actions
+   - Successful grouping operations
+
+### Grouping Examples
+
+#### Simple Property Grouping
+```typescript
+groupingConfig: SgTableGroupingConfig<Product> = {
+  enabled: true,
+  groupBy: 'category'
+};
+```
+
+#### Hierarchical Grouping
+```typescript
+groupingConfig: SgTableGroupingConfig<Product> = {
+  enabled: true,
+  groupBy: ['country', 'city']
+};
+```
+
+#### Function-Based Grouping
+```typescript
+groupingConfig: SgTableGroupingConfig<Product> = {
+  enabled: true,
+  groupBy: (product) => {
+    if (product.price > 100) return 'Premium';
+    if (product.price > 50) return 'Standard';
+    return 'Budget';
+  }
+};
+```
+
+#### Sorting Within Groups
+```typescript
+groupingConfig: SgTableGroupingConfig<Product> = {
+  enabled: true,
+  groupBy: 'category',
+  sortWithinGroups: true  // Sort within each category
+};
+```
+
+### Styling Row Grouping
+
+The row grouping feature includes default styles that can be customized:
+
+```css
+/* Table with grouping enabled */
+.sg-table-grouping-enabled {
+  /* Your styles */
+}
+
+/* Checkbox column cells */
+.sg-table .sg-checkbox-column {
+  width: 48px;
+  text-align: center;
+}
+
+/* Selected rows */
+.sg-table tr.sg-row-selected {
+  background-color: rgba(0, 0, 0, 0.04);
+}
+
+/* Group button */
+.sg-table .sg-group-button {
+  /* Your styles */
+}
+```
+
+
 
 ## Development
 
