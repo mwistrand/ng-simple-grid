@@ -170,6 +170,13 @@ export class SgTableComponent<T> extends CdkTable<T> {
   readonly groupingConfig = input<SgTableGroupingConfig<T>>();
 
   /**
+   * Enables row grouping by providing a grouping specification.
+   * Can be a property name, an array of property names, or a function that returns
+   * a group name string (or array of strings) for a given data item.
+   */
+  readonly groupBy = input<keyof T | (keyof T)[] | ((data: T) => string | string[])>();
+
+  /**
    * Emits when column order changes due to drag and drop operation.
    * Contains information about the source and target column indices and the drop position.
    */

@@ -2,21 +2,20 @@ import { DataSource } from '@angular/cdk/collections';
 import { BehaviorSubject, Observable, combineLatest } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { SgTableGroupingConfig } from './grouping-config';
+import { GroupedData, RowGroup } from './row-group';
 
 export interface SortState {
   active: string;
   direction: 'asc' | 'desc' | '';
 }
 
-interface GroupInfo<T> {
-  groupPath: string[];
-  items: T[];
-}
-
 export class GroupableDataSource<T> extends DataSource<T> {
   private dataSubject = new BehaviorSubject<T[]>([]);
   private userGroupsMap = new Map<T, string>();
   private sortSubject = new BehaviorSubject<SortState | null>(null);
+  private groupedDataSubject = new BehaviorSubject<GroupedData<T> | null>(null);
+
+  readonly groupedData$ = this.groupedDataSubject.asObservable();
 
   constructor(
     private config: SgTableGroupingConfig<T>,
@@ -29,6 +28,7 @@ export class GroupableDataSource<T> extends DataSource<T> {
     return combineLatest([this.dataSubject, this.sortSubject]).pipe(
       map(([data, sort]) => {
         if (!data || data.length === 0) {
+          this.groupedDataSubject.next(null);
           return [];
         }
 
@@ -46,6 +46,7 @@ export class GroupableDataSource<T> extends DataSource<T> {
   disconnect(): void {
     this.dataSubject.complete();
     this.sortSubject.complete();
+    this.groupedDataSubject.complete();
   }
 
   setData(data: T[]): void {
@@ -63,6 +64,11 @@ export class GroupableDataSource<T> extends DataSource<T> {
     this.dataSubject.next(this.dataSubject.value);
   }
 
+  getGroupForItem(item: T): RowGroup<T> | undefined {
+    const groupedData = this.groupedDataSubject.value;
+    return groupedData?.groupMap.get(item);
+  }
+
   private applyGrouping(data: T[]): T[] {
     const groups = new Map<string, T[]>();
 
@@ -77,14 +83,44 @@ export class GroupableDataSource<T> extends DataSource<T> {
     }
 
     const result: T[] = [];
-    for (const [, items] of groups) {
+    const rowGroups: RowGroup<T>[] = [];
+    const groupMap = new Map<T, RowGroup<T>>();
+    let currentIndex = 0;
+
+    for (const [groupKey, items] of groups) {
+      const groupPath = groupKey.split('|');
+      const groupName = groupPath[groupPath.length - 1];
+      const startIndex = currentIndex;
+      const endIndex = currentIndex + items.length - 1;
+
+      const rowGroup: RowGroup<T> = {
+        groupKey,
+        groupPath,
+        groupName,
+        items,
+        startIndex,
+        endIndex,
+      };
+
+      rowGroups.push(rowGroup);
+      items.forEach((item) => {
+        groupMap.set(item, rowGroup);
+      });
+
       result.push(...items);
+      currentIndex += items.length;
     }
+
+    this.groupedDataSubject.next({
+      groups: rowGroups,
+      flatData: result,
+      groupMap,
+    });
 
     return result;
   }
 
-  private getGroupPath(item: T): string[] {
+  getGroupPath(item: T): string[] {
     const path: string[] = [];
 
     const userGroup = this.userGroupsMap.get(item);
@@ -135,9 +171,40 @@ export class GroupableDataSource<T> extends DataSource<T> {
     }
 
     const result: T[] = [];
-    for (const [, items] of groups) {
-      result.push(...this.sortData(items, sort));
+    const rowGroups: RowGroup<T>[] = [];
+    const groupMap = new Map<T, RowGroup<T>>();
+    let currentIndex = 0;
+
+    for (const [groupKey, items] of groups) {
+      const sortedItems = this.sortData(items, sort);
+      const groupPath = groupKey.split('|');
+      const groupName = groupPath[groupPath.length - 1];
+      const startIndex = currentIndex;
+      const endIndex = currentIndex + sortedItems.length - 1;
+
+      const rowGroup: RowGroup<T> = {
+        groupKey,
+        groupPath,
+        groupName,
+        items: sortedItems,
+        startIndex,
+        endIndex,
+      };
+
+      rowGroups.push(rowGroup);
+      sortedItems.forEach((item) => {
+        groupMap.set(item, rowGroup);
+      });
+
+      result.push(...sortedItems);
+      currentIndex += sortedItems.length;
     }
+
+    this.groupedDataSubject.next({
+      groups: rowGroups,
+      flatData: result,
+      groupMap,
+    });
 
     return result;
   }

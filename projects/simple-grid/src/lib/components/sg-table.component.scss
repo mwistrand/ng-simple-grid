@@ -17,3 +17,18 @@
   position: sticky;
   top: 0;
 }
+
+.sg-row-group {
+  display: contents;
+}
+
+.sg-group-header-row {
+  font-weight: bold;
+  background-color: #f5f5f5;
+}
+
+.sg-table-grouping-enabled {
+  .sg-group-header-row.sg-table-sticky {
+    z-index: 10;
+  }
+}

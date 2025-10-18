@@ -15,3 +15,4 @@ export * from './sg-header-row-def.directive';
 export * from './sg-footer-row-def.directive';
 export * from './sg-row-def.directive';
 export * from './sg-no-data-row.directive';
+export * from './sg-group-header-row-def.directive';
