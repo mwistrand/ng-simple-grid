@@ -12,3 +12,8 @@
 .sg-header-cell[aria-grabbed='true'] {
   opacity: 0.5;
 }
+
+.sg-table-sticky {
+  position: sticky;
+  top: 0;
+}

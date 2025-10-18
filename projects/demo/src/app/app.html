@@ -18,7 +18,13 @@
     [loadThresholdPercentTop]="40"
     (loadingState)="onLoadingStateChange($event)"
   >
-    <table class="table" sg-table [dnd]="true" (updateColumnOrder)="onUpdateColumnOrder($event)">
+    <table
+      class="table"
+      sg-table
+      fixedLayout
+      [dnd]="true"
+      (updateColumnOrder)="onUpdateColumnOrder($event)"
+    >
       <!-- ID Column -->
       <ng-container sgColumnDef="id">
         <th sg-header-cell *sgHeaderCellDef>ID</th>
@@ -38,7 +44,7 @@
       </ng-container>
 
       <!-- Header and Row Declarations -->
-      <tr sg-header-row *sgHeaderRowDef="displayedColumns"></tr>
+      <tr sg-header-row *sgHeaderRowDef="displayedColumns; sticky: true"></tr>
       <tr sg-row *sgRowDef="let row; columns: displayedColumns"></tr>
     </table>
   </sg-table-scroll>
