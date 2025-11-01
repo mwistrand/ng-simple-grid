@@ -1,3 +1,10 @@
+// Column resizing support - header cells need relative positioning for resizer
+.sg-header-cell {
+  position: relative;
+  // Allow the resizer to extend beyond cell bounds
+  overflow: visible;
+}
+
 .sg-header-cell.is-drop-candidate {
   outline: 2px dotted #000;
   outline-offset: -2px;
@@ -16,4 +23,5 @@
 .sg-table-sticky {
   position: sticky;
   top: 0;
+  z-index: 10;
 }

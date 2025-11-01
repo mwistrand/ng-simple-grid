@@ -1,0 +1,95 @@
+.sg-column-resizer-host {
+  // Host element positioned at the right edge of the cell
+  position: absolute;
+  right: -8px; // Center the 16px wide handle on the cell border
+  top: 0;
+  bottom: 0;
+  width: 16px; // Wider hit area for easier interaction
+  z-index: 10;
+  pointer-events: auto; // Ensure it receives mouse events
+}
+
+.sg-column-resizer {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  cursor: col-resize;
+  user-select: none;
+  touch-action: none;
+}
+
+.sg-column-resizer-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+
+  &:focus + .sg-column-resizer-handle {
+    outline: 2px solid #0066cc;
+    outline-offset: -1px;
+    background-color: rgba(0, 102, 204, 0.3);
+  }
+}
+
+.sg-column-resizer-handle {
+  position: absolute;
+  left: 50%; // Center in the 16px parent
+  transform: translateX(-50%);
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background-color: rgba(0, 102, 204, 0.2);
+  transition:
+    background-color 0.15s ease-in-out,
+    width 0.15s ease-in-out;
+  pointer-events: auto; // Ensure it receives mouse events
+
+  // Always show a subtle line so users can find it
+  &::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background-color: rgba(0, 102, 204, 0.4);
+    transform: translateX(-50%);
+  }
+
+  &:hover {
+    background-color: rgba(0, 102, 204, 0.5);
+    width: 5px;
+
+    &::before {
+      background-color: #0066cc;
+      width: 2px;
+    }
+  }
+
+  &.is-resizing {
+    background-color: rgba(0, 102, 204, 0.6);
+    width: 5px;
+
+    &::before {
+      background-color: #0066cc;
+      width: 2px;
+    }
+  }
+}
+
+// Ghost line during resize - full height visual feedback
+.sg-column-resize-ghost {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background-color: #0066cc;
+  box-shadow: 0 0 4px rgba(0, 102, 204, 0.5);
+  pointer-events: none;
+  z-index: 1000;
+  opacity: 0.8;
+}

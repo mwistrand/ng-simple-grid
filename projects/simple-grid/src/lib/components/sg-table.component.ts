@@ -45,6 +45,7 @@ import {
   SG_HEADER_CELL_SELECTOR,
   SgHeaderCellDirective,
 } from '../directives/sg-header-cell.directive';
+import { ColumnWidthUpdate } from '../models/column-width-config';
 
 /** Position relative to the target column where a dragged column should be inserted. */
 export type ColumnOrderPosition = 'before' | 'after' | null;
@@ -67,6 +68,14 @@ export type DraggableColumnFlagProvider = () => boolean | undefined | null;
 /** Injection token for providing drag and drop enabled state to child directives. */
 export const DRAGGABLE_COLUMN_FLAG_PROVIDER = new InjectionToken<DraggableColumnFlagProvider>(
   'SgDraggableColumnFlagToken',
+);
+
+/** Provider function that returns whether column resizing is enabled. */
+export type ResizableColumnFlagProvider = () => boolean | undefined | null;
+
+/** Injection token for providing resize enabled state to child directives. */
+export const RESIZABLE_COLUMN_FLAG_PROVIDER = new InjectionToken<ResizableColumnFlagProvider>(
+  'SgResizableColumnFlagToken',
 );
 
 @Component({
@@ -118,6 +127,11 @@ export const DRAGGABLE_COLUMN_FLAG_PROVIDER = new InjectionToken<DraggableColumn
       useFactory: (comp: SgTableComponent<any>) => () => comp.dnd(),
       deps: [forwardRef(() => SgTableComponent<any>)],
     },
+    {
+      provide: RESIZABLE_COLUMN_FLAG_PROVIDER,
+      useFactory: (comp: SgTableComponent<any>) => () => comp.resizable(),
+      deps: [forwardRef(() => SgTableComponent<any>)],
+    },
   ],
   encapsulation: ViewEncapsulation.None,
   // See note on CdkTable for explanation on why this uses the default change detection strategy.
@@ -153,11 +167,20 @@ export class SgTableComponent<T> extends CdkTable<T> {
   /** Enable drag and drop for columns */
   readonly dnd = input(false);
 
+  /** Enable column resizing functionality */
+  readonly resizable = input<boolean>(false);
+
   /**
    * Emits when column order changes due to drag and drop operation.
    * Contains information about the source and target column indices and the drop position.
    */
   readonly updateColumnOrder = output<ColumnOrderUpdate>();
+
+  /**
+   * Emits when column width changes.
+   * Contains information about which column was resized and its new width.
+   */
+  readonly updateColumnWidth = output<ColumnWidthUpdate>();
 
   override get dataSource(): CdkTableDataSourceInput<T> {
     const dataSource = super.dataSource;
@@ -530,6 +553,21 @@ export class SgTableComponent<T> extends CdkTable<T> {
       from: fromIndex,
       to: toIndex,
       position,
+    });
+  }
+
+  /**
+   * Method that header cells can call to notify table of width changes.
+   * This allows the table to emit events for persistence/logging.
+   * @param columnId The column identifier
+   * @param newWidth The new width in pixels
+   * @param previousWidth The previous width in pixels
+   */
+  onColumnWidthChange(columnId: string, newWidth: number, previousWidth: number) {
+    this.updateColumnWidth.emit({
+      columnId,
+      width: newWidth,
+      previousWidth,
     });
   }
 }

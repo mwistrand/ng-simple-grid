@@ -1,6 +1,7 @@
 import { NgModule } from '@angular/core';
 
 import {
+  SgColumnResizerComponent,
   SgTableScrollComponent,
   SgTableComponent,
   SgHeaderRowComponent,
@@ -23,6 +24,7 @@ import {
 } from './lib/directives';
 
 const INCLUDED = [
+  SgColumnResizerComponent,
   SgTableScrollComponent,
   SgTableComponent,
   SgColumnDefDirective,

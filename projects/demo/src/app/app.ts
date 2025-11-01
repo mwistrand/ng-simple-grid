@@ -7,6 +7,7 @@ import {
   SgTableLoadingState,
   SgTableModule,
 } from 'simple-grid';
+import type { ColumnWidthUpdate } from 'simple-grid';
 import { CommonModule } from '@angular/common';
 
 interface User {
@@ -77,6 +78,13 @@ export class AppComponent implements OnInit {
     const [removed] = displayedColumns.splice(from, 1);
     displayedColumns.splice(to, 0, removed);
     this.displayedColumns = displayedColumns;
+  }
+
+  onUpdateColumnWidth(update: ColumnWidthUpdate) {
+    console.log(
+      `Column ${update.columnId} resized from ${update.previousWidth}px to ${update.width}px`,
+    );
+    // Optionally persist to localStorage, backend, etc.
   }
 
   trackById(index: number, user: User): number {

@@ -1,3 +1,4 @@
+export * from './sg-column-resizer.component';
 export * from './sg-table-scroll.component';
 export * from './sg-table.component';
 export * from './sg-header-row.component';

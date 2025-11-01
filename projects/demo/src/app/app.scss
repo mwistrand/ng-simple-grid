@@ -4,29 +4,100 @@
   padding: 20px;
 }
 
-.h1 {
-  margin-bottom: 20px;
+header {
+  margin-bottom: 24px;
+}
+
+h1 {
+  margin-bottom: 12px;
+  font-size: 28px;
+  font-weight: 700;
+  color: #333;
+}
+
+.instructions {
+  font-size: 14px;
+  line-height: 1.6;
+  color: #666;
+  background: #f8f9fa;
+  padding: 12px 16px;
+  border-radius: 4px;
+  border-left: 4px solid #0066cc;
+  margin: 0;
+
+  strong {
+    color: #0066cc;
+    font-weight: 600;
+  }
 }
 
 .status {
   margin-bottom: 10px;
   min-height: 24px;
   color: #666;
+  font-size: 14px;
 }
 
 .sg-table-scroll {
   max-height: 50vh;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  overflow: hidden;
 }
 
 .table {
   width: 100%;
+  border-collapse: collapse;
 
   th {
-    background: #fff;
+    background: #f5f5f5;
+    border-bottom: 2px solid #ddd;
+    font-weight: 600;
+    padding: 12px 16px;
+    text-align: left;
+    position: relative;
+
+    // Ensure there's padding on the right for the resizer
+    padding-right: 24px;
+
+    // Add visual separator between columns
+    &:not(:last-child)::after {
+      content: '';
+      position: absolute;
+      right: 0;
+      top: 25%;
+      bottom: 25%;
+      width: 1px;
+      background-color: rgba(0, 0, 0, 0.08);
+    }
+
+    // Hover effect to show interactivity
+    &:hover {
+      background: #ebebeb;
+    }
+  }
+
+  td {
+    padding: 10px 16px;
+    border-bottom: 1px solid #f0f0f0;
   }
 
   tr {
-    height: 25px;
+    height: auto;
     text-align: left;
+
+    &:hover td {
+      background: #fafafa;
+    }
+  }
+
+  // Enhance the resizer visibility
+  .sg-column-resizer-handle {
+    // Override library styles for better demo visibility
+    background-color: rgba(0, 102, 204, 0.2) !important;
+
+    &:hover {
+      background-color: rgba(0, 102, 204, 0.6) !important;
+    }
   }
 }

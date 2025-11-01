@@ -1,6 +1,12 @@
 <main>
   <header>
     <h1>Simple Grid Demo</h1>
+    <p class="instructions">
+      <strong>Drag &amp; Drop:</strong> Drag column headers to reorder columns. Use Shift + Arrow
+      keys for keyboard reordering.<br />
+      <strong>Resize:</strong> Drag the resize handle on the right edge of each header, or use Tab
+      to focus and arrow keys to resize.
+    </p>
   </header>
 
   <div class="status">
@@ -23,23 +29,29 @@
       sg-table
       fixedLayout
       [dnd]="true"
+      [resizable]="true"
       (updateColumnOrder)="onUpdateColumnOrder($event)"
+      (updateColumnWidth)="onUpdateColumnWidth($event)"
     >
-      <!-- ID Column -->
+      <!-- ID Column - width constraints specified directly on header cell -->
       <ng-container sgColumnDef="id">
-        <th sg-header-cell *sgHeaderCellDef>ID</th>
+        <th sg-header-cell *sgHeaderCellDef [width]="100" [minWidth]="60" [maxWidth]="200">ID</th>
         <td sg-cell *sgCellDef="let user">{{ user.id }}</td>
       </ng-container>
 
       <!-- Name Column -->
       <ng-container sgColumnDef="name">
-        <th sg-header-cell *sgHeaderCellDef>Name</th>
+        <th sg-header-cell *sgHeaderCellDef [width]="200" [minWidth]="100" [maxWidth]="400">
+          Name
+        </th>
         <td sg-cell *sgCellDef="let user">{{ user.name }}</td>
       </ng-container>
 
       <!-- Email Column -->
       <ng-container sgColumnDef="email">
-        <th sg-header-cell *sgHeaderCellDef>Email</th>
+        <th sg-header-cell *sgHeaderCellDef [width]="300" [minWidth]="150" [maxWidth]="500">
+          Email
+        </th>
         <td sg-cell *sgCellDef="let user">{{ user.email }}</td>
       </ng-container>
 
