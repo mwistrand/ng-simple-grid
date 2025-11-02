@@ -1,10 +1,8 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  inject,
   input,
   output,
-  Renderer2,
   signal,
   ViewEncapsulation,
 } from '@angular/core';
@@ -52,8 +50,6 @@ import {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SgColumnResizerComponent {
-  private renderer = inject(Renderer2);
-
   /** Column identifier */
   readonly columnId = input.required<string>();
 
@@ -83,9 +79,6 @@ export class SgColumnResizerComponent {
 
   /** Starting width for drag */
   private startWidth = 0;
-
-  /** Ghost line element for visual feedback */
-  private ghostLine: HTMLElement | null = null;
 
   /**
    * Prevents drag events from bubbling up to the header cell.
@@ -169,9 +162,6 @@ export class SgColumnResizerComponent {
     this.startX = clientX;
     this.startWidth = this.currentWidth();
 
-    // Create ghost line for visual feedback
-    this.createGhostLine(clientX);
-
     // Prevent text selection during drag
     document.body.style.userSelect = 'none';
     document.body.style.cursor = 'col-resize';
@@ -207,9 +197,6 @@ export class SgColumnResizerComponent {
 
     // Enforce min/max constraints
     newWidth = Math.max(this.minWidth(), Math.min(this.maxWidth(), newWidth));
-
-    // Update ghost line position
-    this.updateGhostLine(clientX);
 
     // Emit width change for live updates
     this.widthChange.emit(newWidth);
@@ -251,37 +238,7 @@ export class SgColumnResizerComponent {
 
     // Clean up
     this.isResizing.set(false);
-    this.removeGhostLine();
     document.body.style.userSelect = '';
     document.body.style.cursor = '';
-  }
-
-  /**
-   * Creates a ghost line for visual feedback during resize.
-   */
-  private createGhostLine(clientX: number) {
-    this.ghostLine = this.renderer.createElement('div');
-    this.renderer.addClass(this.ghostLine, 'sg-column-resize-ghost');
-    this.renderer.setStyle(this.ghostLine, 'left', `${clientX}px`);
-    this.renderer.appendChild(document.body, this.ghostLine);
-  }
-
-  /**
-   * Updates ghost line position during resize.
-   */
-  private updateGhostLine(clientX: number) {
-    if (this.ghostLine) {
-      this.renderer.setStyle(this.ghostLine, 'left', `${clientX}px`);
-    }
-  }
-
-  /**
-   * Removes ghost line after resize completes.
-   */
-  private removeGhostLine() {
-    if (this.ghostLine) {
-      this.renderer.removeChild(document.body, this.ghostLine);
-      this.ghostLine = null;
-    }
   }
 }

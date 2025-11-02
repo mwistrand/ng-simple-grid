@@ -193,29 +193,4 @@ describe(SgColumnResizerComponent.name, () => {
   // Note: Touch interaction tests are skipped due to TouchEvent constructor limitations in test environment.
   // Touch functionality is tested manually and works correctly in real browsers.
   // The touch event handlers follow the same logic as mouse handlers which are thoroughly tested above.
-
-  describe('Ghost Line', () => {
-    it('should create ghost line on drag start', () => {
-      const mouseDownEvent = new MouseEvent('mousedown', { clientX: 100 });
-      handle.nativeElement.dispatchEvent(mouseDownEvent);
-
-      const ghostLine = document.querySelector('.sg-column-resize-ghost');
-      expect(ghostLine).toBeTruthy();
-    });
-
-    it('should remove ghost line on drag end', (done) => {
-      const mouseDownEvent = new MouseEvent('mousedown', { clientX: 100 });
-      handle.nativeElement.dispatchEvent(mouseDownEvent);
-
-      setTimeout(() => {
-        const mouseUpEvent = new MouseEvent('mouseup', { clientX: 150 });
-        document.dispatchEvent(mouseUpEvent);
-
-        const ghostLine = document.querySelector('.sg-column-resize-ghost');
-        expect(ghostLine).toBeFalsy();
-
-        done();
-      }, 10);
-    });
-  });
 });
