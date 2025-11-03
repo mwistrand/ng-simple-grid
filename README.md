@@ -2,6 +2,12 @@
 
 An Angular table component library built on Angular CDK, featuring infinite scroll and virtualized rendering capabilities.
 
+## Status and compatibility
+
+- Status: Pre-alpha. APIs and behavior may change without notice.
+- Intended for Angular applications using OnPush change detection throughout. Default Zone.js-driven change detection is not guaranteed to work as expected.
+- Especially important: if you project components using ChangeDetectionStrategy.DEFAULT as content children within the table components (e.g., cells, header/footer cells, or other projected content), updates may not render automatically. Prefer OnPush for content children or manually trigger change detection from the host component.
+
 ## Features
 
 - **Infinite Scroll**: Automatically load data as users scroll through the table
@@ -11,6 +17,10 @@ An Angular table component library built on Angular CDK, featuring infinite scro
 - **CDK-Based**: Built on Angular CDK Table for robust table functionality
 - **Customizable Thresholds**: Configure when to trigger data loading based on scroll position
 - **Accessibility**: Full WCAG 2.2 compliance with keyboard and screen reader support
+
+> Note on change detection
+>
+> This library is optimized for OnPush-compatible apps. If you rely on default Zone.js change detection or include components with ChangeDetectionStrategy.DEFAULT inside table content, you may need to explicitly trigger change detection or refactor to OnPush to ensure updates render as expected.
 
 ## Installation
 
@@ -55,7 +65,7 @@ class UserDataSource extends DataSource<User> {
 @Component({
   selector: 'app-root',
   imports: [SgTableModule],
-  template: `...`
+  template: `...`,
 })
 export class AppComponent implements OnInit {
   readonly displayedColumns = ['id', 'name', 'email'];
@@ -85,8 +95,8 @@ export class AppComponent implements OnInit {
   [maxRenderItemCount]="100"
   [loadThresholdPercentBottom]="40"
   [loadThresholdPercentTop]="40"
-  (loadingState)="onLoadingStateChange($event)">
-
+  (loadingState)="onLoadingStateChange($event)"
+>
   <table sg-table>
     <!-- Column Definitions -->
     <ng-container sgColumnDef="id">
@@ -118,6 +128,7 @@ export class AppComponent implements OnInit {
 The scroll container component that handles infinite scroll and virtualization.
 
 **Inputs:**
+
 - `dataSource` - The CDK data source for the table
 - `trackBy` (required) - TrackBy function for efficient row rendering
 - `batchSize` - Number of items to load per batch (default: 50)
@@ -126,6 +137,7 @@ The scroll container component that handles infinite scroll and virtualization.
 - `loadThresholdPercentBottom` - Percentage of viewport to trigger loading when scrolling down (default: 20)
 
 **Outputs:**
+
 - `loadingState` - Emits loading state changes with direction ('next' or 'previous')
 
 ### sg-table
@@ -135,9 +147,11 @@ The table component built on Angular CDK Table. Use as the selector `table[sg-ta
 This component extends `CdkTable` and provides the same functionality with additional features for working with the scroll container.
 
 **Inputs:**
+
 - `dnd` - Enable drag and drop for column reordering (default: false)
 
 **Outputs:**
+
 - `updateColumnOrder` - Emits when columns are reordered via drag and drop
 
 ## Drag and Drop Column Reordering
@@ -149,10 +163,7 @@ NgSimpleGrid supports comprehensive drag-and-drop functionality for reordering t
 To enable drag-and-drop column reordering, add the `[dnd]="true"` input to the table element:
 
 ```html
-<sg-table-scroll
-  [dataSource]="dataSource"
-  [trackBy]="trackById">
-
+<sg-table-scroll [dataSource]="dataSource" [trackBy]="trackById">
   <table sg-table [dnd]="true" (updateColumnOrder)="onColumnReorder($event)">
     <!-- Column definitions -->
     <ng-container sgColumnDef="id">
@@ -188,7 +199,7 @@ import { ColumnOrderUpdate } from 'simple-grid';
 @Component({
   selector: 'app-root',
   imports: [SgTableModule],
-  template: `...`
+  template: `...`,
 })
 export class AppComponent {
   displayedColumns = signal(['id', 'name', 'email']);
@@ -213,6 +224,7 @@ export class AppComponent {
 ```
 
 The `ColumnOrderUpdate` interface contains:
+
 - `from: number` - The index of the column being moved
 - `to: number` - The index of the target column
 - `position: 'before' | 'after' | null` - Where to insert relative to the target column
@@ -247,22 +259,26 @@ In this example, the "ID" and "Actions" columns cannot be dragged or used as dro
 The drag-and-drop functionality is fully accessible:
 
 #### Mouse Users
+
 - Drag header cells to reorder columns
 - Visual feedback with dotted borders on drop targets
 - Cursor changes to 'move' when hovering over draggable headers
 
 #### Touch Users
+
 - Touch and drag header cells on mobile devices
 - Same visual feedback as mouse interactions
 - Optimized for touch screens with proper touch event handling
 
 #### Keyboard Users
+
 - Press **Tab** to navigate to column headers
 - Use **Shift + Arrow Left** to move a column to the left
 - Use **Shift + Arrow Right** to move a column to the right
 - ARIA attributes (`aria-grabbed`, `role="button"`) for screen readers
 
 #### Screen Readers
+
 - Column headers announce as buttons when draggable
 - `aria-grabbed` attribute indicates drag state
 - Clear focus management during keyboard reordering
@@ -273,7 +289,7 @@ The drag-and-drop functionality includes default styles that can be customized:
 
 ```css
 /* Dragged column visual feedback */
-.sg-header-cell[draggable="true"] {
+.sg-header-cell[draggable='true'] {
   cursor: move;
   user-select: none;
 }
@@ -285,7 +301,7 @@ The drag-and-drop functionality includes default styles that can be customized:
 }
 
 /* Column being dragged (automatically applied) */
-.sg-header-cell[aria-grabbed="true"] {
+.sg-header-cell[aria-grabbed='true'] {
   opacity: 0.5;
 }
 ```
