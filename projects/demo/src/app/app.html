@@ -1,63 +1,170 @@
-<main>
-  <header>
-    <h1>Simple Grid Demo</h1>
-    <p class="instructions">
-      <strong>Drag &amp; Drop:</strong> Drag column headers to reorder columns. Use Shift + Arrow
-      keys for keyboard reordering.<br />
-      <strong>Resize:</strong> Drag the resize handle on the right edge of each header, or use Tab
-      to focus and arrow keys to resize.
-    </p>
+<div class="app-container">
+  <header class="app-header">
+    <div class="header-content">
+      <div class="header-title-section">
+        <h1 class="app-title">Simple Grid Demo</h1>
+        <p class="app-subtitle">
+          A lightweight, accessible data grid with drag-and-drop and resizable columns
+        </p>
+      </div>
+
+      <div class="instructions-card">
+        <h2 class="instructions-title">Interactive Features</h2>
+        <div class="instructions-grid">
+          <div class="instruction-item">
+            <div class="instruction-icon" aria-hidden="true">
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path
+                  d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2v-4M9 21H5a2 2 0 0 1-2-2v-4"
+                ></path>
+              </svg>
+            </div>
+            <div class="instruction-content">
+              <strong class="instruction-label">Drag & Drop</strong>
+              <p class="instruction-text">
+                Drag column headers to reorder. Use <kbd>Shift</kbd> + <kbd>Arrow</kbd> keys for
+                keyboard reordering.
+              </p>
+            </div>
+          </div>
+
+          <div class="instruction-item">
+            <div class="instruction-icon" aria-hidden="true">
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path d="M8 3v18M16 3v18M3 8h18M3 16h18"></path>
+              </svg>
+            </div>
+            <div class="instruction-content">
+              <strong class="instruction-label">Resize Columns</strong>
+              <p class="instruction-text">
+                Drag the resize handle on column edges. Use <kbd>Tab</kbd> to focus and
+                <kbd>Arrow</kbd> keys to resize.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </header>
 
-  <div class="status">
-    @if (dataSource.loading$ | async) {
-      <span>Loading...</span>
-    }
-  </div>
+  <main class="app-main">
+    <div class="table-container">
+      <div class="table-header">
+        <div class="table-info">
+          <h2 class="table-title">User Directory</h2>
+          <p class="table-description">Virtualized scrolling with 50 items per batch</p>
+        </div>
 
-  <sg-table-scroll
-    [dataSource]="dataSource"
-    [trackBy]="trackById"
-    [batchSize]="50"
-    [maxRenderItemCount]="100"
-    [loadThresholdPercentBottom]="40"
-    [loadThresholdPercentTop]="40"
-    (loadingState)="onLoadingStateChange($event)"
-  >
-    <table
-      class="table"
-      sg-table
-      fixedLayout
-      [dnd]="true"
-      [resizable]="true"
-      (updateColumnOrder)="onUpdateColumnOrder($event)"
-      (updateColumnWidth)="onUpdateColumnWidth($event)"
-    >
-      <!-- ID Column - width constraints specified directly on header cell -->
-      <ng-container sgColumnDef="id">
-        <th sg-header-cell *sgHeaderCellDef [width]="100" [minWidth]="60" [maxWidth]="200">ID</th>
-        <td sg-cell *sgCellDef="let user">{{ user.id }}</td>
-      </ng-container>
+        <div class="table-status">
+          @if (dataSource.loading$ | async) {
+            <div class="loading-indicator">
+              <span class="loading-spinner" aria-hidden="true"></span>
+              <span class="loading-text">Loading more data...</span>
+            </div>
+          }
+        </div>
+      </div>
 
-      <!-- Name Column -->
-      <ng-container sgColumnDef="name">
-        <th sg-header-cell *sgHeaderCellDef [width]="200" [minWidth]="100" [maxWidth]="400">
-          Name
-        </th>
-        <td sg-cell *sgCellDef="let user">{{ user.name }}</td>
-      </ng-container>
+      <sg-table-scroll
+        class="data-grid-scroll"
+        [dataSource]="dataSource"
+        [trackBy]="trackById"
+        [batchSize]="50"
+        [maxRenderItemCount]="100"
+        [loadThresholdPercentBottom]="40"
+        [loadThresholdPercentTop]="40"
+        (loadingState)="onLoadingStateChange($event)"
+      >
+        <table
+          class="data-grid"
+          sg-table
+          fixedLayout
+          [dnd]="true"
+          [resizable]="true"
+          (updateColumnOrder)="onUpdateColumnOrder($event)"
+          (updateColumnWidth)="onUpdateColumnWidth($event)"
+        >
+          <!-- ID Column -->
+          <ng-container sgColumnDef="id">
+            <th
+              sg-header-cell
+              *sgHeaderCellDef
+              [width]="100"
+              [minWidth]="60"
+              [maxWidth]="200"
+              class="grid-header-cell"
+              tabindex="0"
+            >
+              <span class="header-label">ID</span>
+            </th>
+            <td sg-cell *sgCellDef="let user" class="grid-cell">
+              <span class="cell-content">{{ user.id }}</span>
+            </td>
+          </ng-container>
 
-      <!-- Email Column -->
-      <ng-container sgColumnDef="email">
-        <th sg-header-cell *sgHeaderCellDef [width]="300" [minWidth]="150" [maxWidth]="500">
-          Email
-        </th>
-        <td sg-cell *sgCellDef="let user">{{ user.email }}</td>
-      </ng-container>
+          <!-- Name Column -->
+          <ng-container sgColumnDef="name">
+            <th
+              sg-header-cell
+              *sgHeaderCellDef
+              [width]="200"
+              [minWidth]="100"
+              [maxWidth]="400"
+              class="grid-header-cell"
+              tabindex="0"
+            >
+              <span class="header-label">Name</span>
+            </th>
+            <td sg-cell *sgCellDef="let user" class="grid-cell">
+              <span class="cell-content">{{ user.name }}</span>
+            </td>
+          </ng-container>
 
-      <!-- Header and Row Declarations -->
-      <tr sg-header-row *sgHeaderRowDef="displayedColumns; sticky: true"></tr>
-      <tr sg-row *sgRowDef="let row; columns: displayedColumns"></tr>
-    </table>
-  </sg-table-scroll>
-</main>
+          <!-- Email Column -->
+          <ng-container sgColumnDef="email">
+            <th
+              sg-header-cell
+              *sgHeaderCellDef
+              [width]="300"
+              [minWidth]="150"
+              [maxWidth]="500"
+              class="grid-header-cell"
+              tabindex="0"
+            >
+              <span class="header-label">Email</span>
+            </th>
+            <td sg-cell *sgCellDef="let user" class="grid-cell">
+              <span class="cell-content">{{ user.email }}</span>
+            </td>
+          </ng-container>
+
+          <!-- Header and Row Declarations -->
+          <tr
+            sg-header-row
+            *sgHeaderRowDef="displayedColumns; sticky: true"
+            class="grid-header-row"
+          ></tr>
+          <tr sg-row *sgRowDef="let row; columns: displayedColumns" class="grid-row"></tr>
+        </table>
+      </sg-table-scroll>
+    </div>
+  </main>
+
+  <footer class="app-footer">
+    <p class="footer-text">Built with Simple Grid • A modern Angular data grid component</p>
+  </footer>
+</div>

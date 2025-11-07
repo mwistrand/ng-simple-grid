@@ -37,6 +37,9 @@ export const SG_HEADER_CELL_SELECTOR = 'sg-header-cell, th[sg-header-cell]';
   },
 })
 export class SgHeaderCellDirective extends CdkHeaderCell {
+  /** The parent table component **/
+  private table: SgTableComponent<any> | null;
+
   /** Whether this individual column is draggable. Defaults to true. */
   readonly draggable = input<boolean>(true);
 
@@ -99,6 +102,8 @@ export class SgHeaderCellDirective extends CdkHeaderCell {
     private viewContainerRef: ViewContainerRef,
   ) {
     super();
+
+    this.table = inject(SgTableComponent, { optional: true });
 
     let originalTabIndex: string | undefined = undefined;
     let originalRole: string | undefined = undefined;
@@ -219,8 +224,7 @@ export class SgHeaderCellDirective extends CdkHeaderCell {
    */
   private onWidthChangeComplete(newWidth: number) {
     // Notify table component for event emission (optional, for persistence)
-    const table = inject(SgTableComponent, { optional: true });
-    table?.onColumnWidthChange(this.columnId(), newWidth, this.previousWidth);
+    this.table?.onColumnWidthChange(this.columnId(), newWidth, this.previousWidth);
     this.previousWidth = newWidth;
   }
 
