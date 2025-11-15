@@ -66,10 +66,25 @@
       <div class="table-header">
         <div class="table-info">
           <h2 class="table-title">User Directory</h2>
-          <p class="table-description">Virtualized scrolling with 50 items per batch</p>
+          <p class="table-description">
+            Virtualized scrolling with 50 items per batch (max 1000 items)
+          </p>
         </div>
 
-        <div class="table-status">
+        <div class="table-controls">
+          <!-- Grouping toggle button -->
+          <button
+            type="button"
+            class="toggle-grouping-btn"
+            [attr.aria-pressed]="groupingEnabled"
+            (click)="toggleGrouping()"
+          >
+            <span class="toggle-icon" aria-hidden="true">
+              {{ groupingEnabled ? '☑' : '☐' }}
+            </span>
+            <span class="toggle-label">Group by Department</span>
+          </button>
+
           @if (dataSource.loading$ | async) {
             <div class="loading-indicator">
               <span class="loading-spinner" aria-hidden="true"></span>
@@ -90,11 +105,13 @@
         (loadingState)="onLoadingStateChange($event)"
       >
         <table
+          #table
           class="data-grid"
           sg-table
           fixedLayout
           [dnd]="true"
           [resizable]="true"
+          [groupConfig]="currentGroupConfig"
           (updateColumnOrder)="onUpdateColumnOrder($event)"
           (updateColumnWidth)="onUpdateColumnWidth($event)"
         >
@@ -111,8 +128,8 @@
             >
               <span class="header-label">ID</span>
             </th>
-            <td sg-cell *sgCellDef="let user" class="grid-cell">
-              <span class="cell-content">{{ user.id }}</span>
+            <td sg-cell *sgCellDef="let row" class="grid-cell">
+              <span class="cell-content">{{ (row | unwrapGroupedRow).id }}</span>
             </td>
           </ng-container>
 
@@ -129,8 +146,8 @@
             >
               <span class="header-label">Name</span>
             </th>
-            <td sg-cell *sgCellDef="let user" class="grid-cell">
-              <span class="cell-content">{{ user.name }}</span>
+            <td sg-cell *sgCellDef="let row" class="grid-cell">
+              <span class="cell-content">{{ (row | unwrapGroupedRow).name }}</span>
             </td>
           </ng-container>
 
@@ -147,8 +164,26 @@
             >
               <span class="header-label">Email</span>
             </th>
-            <td sg-cell *sgCellDef="let user" class="grid-cell">
-              <span class="cell-content">{{ user.email }}</span>
+            <td sg-cell *sgCellDef="let row" class="grid-cell">
+              <span class="cell-content">{{ (row | unwrapGroupedRow).email }}</span>
+            </td>
+          </ng-container>
+
+          <!-- Department Column -->
+          <ng-container sgColumnDef="department">
+            <th
+              sg-header-cell
+              *sgHeaderCellDef
+              [width]="200"
+              [minWidth]="100"
+              [maxWidth]="400"
+              class="grid-header-cell"
+              tabindex="0"
+            >
+              <span class="header-label">Department</span>
+            </th>
+            <td sg-cell *sgCellDef="let row" class="grid-cell">
+              <span class="cell-content">{{ (row | unwrapGroupedRow).department }}</span>
             </td>
           </ng-container>
 

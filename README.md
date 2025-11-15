@@ -308,6 +308,76 @@ The drag-and-drop functionality includes default styles that can be customized:
 
 You can override these styles in your application's CSS to match your design system.
 
+## Row Grouping
+
+NgSimpleGrid supports grouping rows by a field or computed value. Grouping is enabled by passing a `groupConfig` object to the `sg-table` component. When enabled, the table wraps your data source and emits group header rows that you can render in the table using the same row outlet.
+
+### Basic groupConfig
+
+The `GroupConfig<T>` has the following shape:
+
+- `groupBy: keyof T | ((item: T) => string | number)` — Field name or function used to compute the group key.
+- `initialCollapsed?: boolean` — Optional flag to initialize groups collapsed (defaults to `false`, meaning all expanded).
+- `groupLabel?: (groupValue: string | number, count: number) => string` — Optional formatter for the group header label.
+
+### Example
+
+Below is an example that groups users by `company` and renders a clickable group header that toggles expand/collapse. Use the `unwrapGroupedRow` pipe in cell templates to access the original data when grouping may be enabled.
+
+```html
+<sg-table-scroll [dataSource]="dataSource" [trackBy]="trackById">
+  <table
+    sg-table
+    [groupConfig]="{ groupBy: 'company', initialCollapsed: false }"
+    (groupToggle)="onGroupToggle($event)"
+  >
+    <!-- Group header row template (renders when the row is a group header) -->
+    <tr sg-row *sgRowDef="let row; when: isGroupRow">
+      <td colspan="3" class="sg-group-header" (click)="table.toggleGroup(row.groupKey)">
+        {{ row.groupValue }} ({{ row.count }})
+        <button aria-label="Toggle group">{{ row.isExpanded ? '▾' : '▸' }}</button>
+      </td>
+    </tr>
+
+    <!-- Data row template (renders normal data rows). Use unwrapGroupedRow to get the original item. -->
+    <tr sg-row *sgRowDef="let row; columns: displayedColumns; when: isDataRow">
+      <td sg-cell *sgCellDef="let r">{{ r | unwrapGroupedRow | json }}</td>
+    </tr>
+  </table>
+</sg-table-scroll>
+```
+
+```typescript
+import { Component } from '@angular/core';
+import { GroupConfig, isGroupRow, isDataRow, unwrapGroupedRow } from 'simple-grid';
+
+@Component({
+  selector: 'app-root',
+  template: `...`,
+})
+export class AppComponent {
+  displayedColumns = ['id', 'name', 'email'];
+  groupConfig: GroupConfig<any> = { groupBy: 'company', initialCollapsed: false };
+
+  trackById(index: number, item: any) {
+    return item.id;
+  }
+
+  isGroupRow = isGroupRow;
+  isDataRow = isDataRow;
+
+  onGroupToggle(event: { groupKey: string; isExpanded: boolean }) {
+    console.log('Group toggled', event);
+  }
+}
+```
+
+Notes:
+
+- The table exposes a `toggleGroup(groupKey: string)` method on `SgTableComponent` which you can call from your group header templates to change expansion state.
+- The library exports `isGroupRow`, `isDataRow`, and `unwrapGroupedRow` helpers (from `simple-grid`) to help distinguishing/grouping rows inside templates.
+- When grouping is enabled, the internal data source transforms your flat rows into a sequence that includes group header objects. Use `trackBy` as usual; the library will prefix group keys so keys remain unique.
+
 ## Development
 
 To start a local development server with the demo:

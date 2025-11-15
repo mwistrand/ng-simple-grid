@@ -22,6 +22,7 @@ import {
   SgNoDataRowDirective,
   SgRecycleRowsDirective,
 } from './lib/directives';
+import { UnwrapGroupedRowPipe } from './lib/pipes';
 
 const INCLUDED = [
   SgColumnResizerComponent,
@@ -42,6 +43,7 @@ const INCLUDED = [
   SgHeaderRowComponent,
   SgRowComponent,
   SgFooterRowComponent,
+  UnwrapGroupedRowPipe,
 ];
 
 @NgModule({

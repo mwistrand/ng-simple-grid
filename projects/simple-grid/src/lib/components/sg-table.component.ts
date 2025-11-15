@@ -3,6 +3,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   ContentChildren,
+  effect,
   ElementRef,
   forwardRef,
   HostListener,
@@ -46,6 +47,9 @@ import {
   SgHeaderCellDirective,
 } from '../directives/sg-header-cell.directive';
 import { ColumnWidthUpdate } from '../models/column-width-config';
+import { GroupConfig } from '../models/group-config';
+import { GroupStateService } from '../services/group-state.service';
+import { GroupingDataSource } from '../models/grouping-data-source';
 
 /** Position relative to the target column where a dragged column should be inserted. */
 export type ColumnOrderPosition = 'before' | 'after' | null;
@@ -132,6 +136,8 @@ export const RESIZABLE_COLUMN_FLAG_PROVIDER = new InjectionToken<ResizableColumn
       useFactory: (comp: SgTableComponent<any>) => () => comp.resizable(),
       deps: [forwardRef(() => SgTableComponent<any>)],
     },
+    // Provide GroupStateService at component level
+    GroupStateService,
   ],
   encapsulation: ViewEncapsulation.None,
   // See note on CdkTable for explanation on why this uses the default change detection strategy.
@@ -170,6 +176,9 @@ export class SgTableComponent<T> extends CdkTable<T> {
   /** Enable column resizing functionality */
   readonly resizable = input<boolean>(false);
 
+  /** Configuration for row grouping */
+  readonly groupConfig = input<GroupConfig<T> | null>(null);
+
   /**
    * Emits when column order changes due to drag and drop operation.
    * Contains information about the source and target column indices and the drop position.
@@ -182,7 +191,25 @@ export class SgTableComponent<T> extends CdkTable<T> {
    */
   readonly updateColumnWidth = output<ColumnWidthUpdate>();
 
+  /**
+   * Emits when a group is toggled (expanded/collapsed).
+   * Contains the group key and new expansion state.
+   */
+  readonly groupToggle = output<{ groupKey: string; isExpanded: boolean }>();
+
+  // Inject GroupStateService (not passed as input)
+  private readonly groupStateService = inject(GroupStateService);
+
+  // Track the original user-provided dataSource
+  private userProvidedDataSource: CdkTableDataSourceInput<T> | null = null;
+  private internalDataSource: CdkTableDataSourceInput<T> | null = null;
+
   override get dataSource(): CdkTableDataSourceInput<T> {
+    // Return the internal (possibly wrapped) dataSource
+    if (this.internalDataSource) {
+      return this.internalDataSource;
+    }
+
     const dataSource = super.dataSource;
     if (dataSource) {
       return dataSource;
@@ -193,7 +220,10 @@ export class SgTableComponent<T> extends CdkTable<T> {
     if (this.parentDataSourceProvider != null) {
       throw new Error('`dataSource` cannot be set when the parent scroll container provides one.');
     }
-    super.dataSource = dataSource;
+
+    // Store original and update internal dataSource
+    this.userProvidedDataSource = dataSource;
+    this.updateInternalDataSource();
   }
 
   override get trackBy(): TrackByFunction<T> {
@@ -220,6 +250,13 @@ export class SgTableComponent<T> extends CdkTable<T> {
     private parentTrackByProvider: ScrollTrackByProvider<T>,
   ) {
     super();
+
+    // React to groupConfig changes and update dataSource wrapping
+    effect(() => {
+      const config = this.groupConfig();
+      // Trigger update when groupConfig changes
+      this.updateInternalDataSource();
+    });
 
     afterEveryRender({
       write: () => {
@@ -569,5 +606,56 @@ export class SgTableComponent<T> extends CdkTable<T> {
       width: newWidth,
       previousWidth,
     });
+  }
+
+  /**
+   * Updates the internal dataSource based on groupConfig.
+   * Wraps user's dataSource with GroupingDataSource if grouping is enabled.
+   */
+  private updateInternalDataSource(): void {
+    const config = this.groupConfig();
+    const source = this.userProvidedDataSource;
+
+    if (!source) {
+      this.internalDataSource = null;
+      return;
+    }
+
+    if (config) {
+      // Wrap with GroupingDataSource
+      this.internalDataSource = new GroupingDataSource(
+        source,
+        config,
+        this.groupStateService,
+      ) as any;
+    } else {
+      // Use original dataSource
+      this.internalDataSource = source;
+    }
+
+    // Update CDK table's dataSource
+    super.dataSource = this.internalDataSource!;
+  }
+
+  /**
+   * Toggle group expansion state.
+   * Can be called from group header row templates.
+   * @param groupKey The unique key identifying the group
+   */
+  toggleGroup(groupKey: string): void {
+    this.groupStateService.toggleGroup(groupKey);
+    const isExpanded = this.groupStateService.isExpanded(groupKey);
+
+    this.groupToggle.emit({
+      groupKey,
+      isExpanded,
+    });
+  }
+
+  /**
+   * Collapse all groups
+   */
+  collapseAllGroups(): void {
+    this.groupStateService.collapseAll();
   }
 }
