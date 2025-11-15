@@ -39,7 +39,7 @@ testem.log
 __screenshots__/
 
 # Private
-/prompts
+/private_
 
 # System files
 .DS_Store
